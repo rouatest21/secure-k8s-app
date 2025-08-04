@@ -29,11 +29,24 @@ jobs:
           echo "${{ secrets.KUBECONFIG_B64 }}" | base64 -d > kconfig
           chmod 600 kconfig
 
-      - name: Apply K8s manifests for app
+      - name: Apply namespace for app
         run: |
           kubectl --kubeconfig=kconfig apply -f infra-k8s/secure-app/namespace.yaml
+
+      - name: Apply K8s manifests for app
+        run: |
           kubectl --kubeconfig=kconfig apply -f infra-k8s/secure-app/
           kubectl --kubeconfig=kconfig rollout status deployment/ci-api -n secure-app
+
+      - name: Apply namespace for monitoring
+        run: |
+          kubectl --kubeconfig=kconfig apply -f infra-k8s/secure-monitoring/namespace.yaml
+
+      - name: Wait for monitoring namespace to be ready
+        run: |
+          for i in {1..5}; do
+            kubectl --kubeconfig=kconfig get ns secure-monitoring && break || sleep 2
+          done
 
       - name: Apply K8s manifests for monitoring
         run: |
