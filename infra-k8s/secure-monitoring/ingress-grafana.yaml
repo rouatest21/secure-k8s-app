@@ -6,6 +6,7 @@ metadata:
   annotations:
     kubernetes.io/ingress.class: traefik
 spec:
+  ingressClassName: traefik   # <-- Ajoute cette ligne ici
   rules:
     - host: grafana.secure.local
       http:
@@ -17,4 +18,3 @@ spec:
                 name: grafana
                 port:
                   number: 3000
-
