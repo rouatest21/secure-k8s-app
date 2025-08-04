@@ -31,12 +31,12 @@ jobs:
 
       - name: Apply K8s manifests for app
         run: |
-          kubectl --kubeconfig=kconfig apply -f infra-k8s/app/namespace.yaml
-          kubectl --kubeconfig=kconfig apply -f infra-k8s/app/
-          kubectl --kubeconfig=kconfig rollout status deployment/secure-app -n secure-app
+          kubectl --kubeconfig=kconfig apply -f infra-k8s/secure-app/namespace.yaml
+          kubectl --kubeconfig=kconfig apply -f infra-k8s/secure-app/
+          kubectl --kubeconfig=kconfig rollout status deployment/ci-api -n secure-app
 
       - name: Apply K8s manifests for monitoring
         run: |
-          kubectl --kubeconfig=kconfig apply -f infra-k8s/monitoring/
+          kubectl --kubeconfig=kconfig apply -f infra-k8s/secure-monitoring/
           kubectl --kubeconfig=kconfig rollout status deployment/grafana -n secure-monitoring
           kubectl --kubeconfig=kconfig rollout status deployment/prometheus -n secure-monitoring
