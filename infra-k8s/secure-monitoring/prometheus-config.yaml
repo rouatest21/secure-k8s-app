@@ -14,3 +14,7 @@ data:
       - job_name: 'kubernetes-pods'
         kubernetes_sd_configs:
           - role: pod
+      - job_name: 'ci-api'                 # Nom du job adapté
+        metrics_path: /metrics             # Chemin d’accès aux métriques exposées par ton app
+        static_configs:
+          - targets: ['ci-api-service.secure-app.svc.cluster.local:80']  # Nom complet DNS du service + port
