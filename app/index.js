@@ -13,23 +13,21 @@ const httpRequestCounter = new client.Counter({
 });
 register.registerMetric(httpRequestCounter);
 
+// Collecte des métriques système
+client.collectDefaultMetrics({ register });
+
 // Middleware pour compter les requêtes
 app.use((req, res, next) => {
   httpRequestCounter.inc();
   next();
 });
 
-// Route par défaut
-app.get('/', (req, res) => {
-  res.send('API Secure K8s is running');
-});
-
-// Route pour les métriques
+// Route /metrics pour Prometheus
 app.get('/metrics', async (req, res) => {
   res.set('Content-Type', register.contentType);
   res.end(await register.metrics());
 });
 
 app.listen(port, () => {
-  console.log(`Server running on port ${port}`);
+  console.log(`App is running on port ${port}`);
 });
