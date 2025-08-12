@@ -28,6 +28,10 @@ app.get('/metrics', async (req, res) => {
   res.end(await register.metrics());
 });
 
+app.get('/', (req, res) => {
+  res.send('Bienvenue sur mon API !');
+});
+
 app.listen(port, () => {
   console.log(`App is running on port ${port}`);
 });
