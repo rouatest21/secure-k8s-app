@@ -32,11 +32,11 @@ jobs:
       # Déploiement app
       - name: Apply namespace for app
         run: |
-          kubectl --kubeconfig=kconfig apply -f infra-k8s/secure-app/namespace.yaml
+          kubectl --kubeconfig=kconfig apply -f ./infra-k8s/secure-app/namespace.yaml
 
       - name: Apply K8s manifests for app
         run: |
-          kubectl --kubeconfig=kconfig apply -f infra-k8s/secure-app/
+          kubectl --kubeconfig=kconfig apply -f ./infra-k8s/secure-app/
           kubectl --kubeconfig=kconfig rollout status deployment/ci-api -n secure-app
 
       # Déploiement monitoring avec Helm
@@ -52,5 +52,5 @@ jobs:
         run: |
           helm upgrade --install kube-prometheus prometheus-community/kube-prometheus-stack \
             -n monitoring --create-namespace \
-            -f infra-k8s/secure-monitoring-helm/alertmanager-values.yaml \
-            -f infra-k8s/secure-monitoring-helm/alerts-ci-api.yaml
+            -f ./infra-k8s/secure-monitoring-helm/alertmanager-values.yaml \
+            -f ./infra-k8s/secure-monitoring-helm/alerts-ci-api.yaml
