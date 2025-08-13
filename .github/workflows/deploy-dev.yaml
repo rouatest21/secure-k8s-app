@@ -1,0 +1,56 @@
+name: CI/CD - Secure K8s App (Dev)
+
+on:
+  push:
+    branches:
+      - dev
+
+jobs:
+  build-deploy:
+    runs-on: self-hosted
+
+    env:
+      IMAGE_NAME: ${{ secrets.DOCKER_USER }}/secure-ci-k8s-api:latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Docker login
+        run: echo "${{ secrets.DOCKER_PASS }}" | docker login -u "${{ secrets.DOCKER_USER }}" --password-stdin
+
+      - name: Build & push image
+        run: |
+          docker build -t $IMAGE_NAME ./app
+          docker push $IMAGE_NAME
+
+      - name: Set kubeconfig
+        run: |
+          echo "${{ secrets.KUBECONFIG_B64 }}" | base64 -d > kconfig
+          chmod 600 kconfig
+
+      # Déploiement app
+      - name: Apply namespace for app
+        run: |
+          kubectl --kubeconfig=kconfig apply -f infra-k8s/secure-app/namespace.yaml
+
+      - name: Apply K8s manifests for app
+        run: |
+          kubectl --kubeconfig=kconfig apply -f infra-k8s/secure-app/
+          kubectl --kubeconfig=kconfig rollout status deployment/ci-api -n secure-app
+
+      # Déploiement monitoring avec Helm
+      - name: Setup Helm
+        uses: azure/setup-helm@v3
+
+      - name: Add Prometheus Helm repo
+        run: |
+          helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+          helm repo update
+
+      - name: Deploy Prometheus/Grafana Helm with Slack
+        run: |
+          helm upgrade --install kube-prometheus prometheus-community/kube-prometheus-stack \
+            -n monitoring --create-namespace \
+            -f infra-k8s/secure-monitoring-helm/alertmanager-values.yaml \
+            -f infra-k8s/secure-monitoring-helm/alerts-ci-api.yaml
