@@ -7,5 +7,5 @@ alertmanager:
     receivers:
       - name: slack-notifications
         slack_configs:
-          - api_url: 'https://hooks.slack.com/services/TXXXX/BXXXX/XXXXXXXX'
+          - api_url: https://hooks.slack.com/services/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
             channel: '#alerts'
