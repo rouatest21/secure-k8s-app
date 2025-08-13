@@ -4,11 +4,11 @@ metadata:
   name: ci-api-servicemonitor
   namespace: secure-app
   labels:
-    release: prometheus       # doit correspondre à la release Helm (dans ton cas c’est bien "prometheus")
+    release: prometheus
 spec:
   selector:
     matchLabels:
-      app: ci-api              # doit correspondre au label de ton Service
+      app: ci-api
   namespaceSelector:
     matchNames:
       - secure-app
