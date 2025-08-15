@@ -19,8 +19,11 @@ jobs:
       - name: Docker login
         run: echo "${{ secrets.DOCKER_PASS }}" | docker login -u "${{ secrets.DOCKER_USER }}" --password-stdin
 
-      - name: Build Docker image
-        run: docker build -t $IMAGE_NAME ./app
+      - name: Build Docker image (no cache)
+        run: docker build --no-cache -t $IMAGE_NAME ./app
+
+      - name: Check cross-spawn version
+        run: docker run --rm $IMAGE_NAME npm ls cross-spawn
 
       - name: Scan Docker image with Trivy (prod-ready)
         run: |
@@ -57,4 +60,3 @@ jobs:
           kubectl --kubeconfig=kconfig apply -f infra-k8s/secure-monitoring/
           kubectl --kubeconfig=kconfig rollout status deployment/grafana -n secure-monitoring
           kubectl --kubeconfig=kconfig rollout status deployment/prometheus -n secure-monitoring
-
