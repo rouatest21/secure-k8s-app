@@ -19,10 +19,16 @@ jobs:
       - name: Docker login
         run: echo "${{ secrets.DOCKER_PASS }}" | docker login -u "${{ secrets.DOCKER_USER }}" --password-stdin
 
-      - name: Build & push image
+      - name: Build Docker image
+        run: docker build -t $IMAGE_NAME ./app
+
+      - name: Scan Docker image with Trivy (prod-ready)
         run: |
-          docker build -t $IMAGE_NAME ./app
-          docker push $IMAGE_NAME
+          docker run --rm -v /var/run/docker.sock:/var/run/docker.sock aquasec/trivy:latest \
+            image --exit-code 1 --severity HIGH,CRITICAL $IMAGE_NAME
+
+      - name: Push Docker image
+        run: docker push $IMAGE_NAME
 
       - name: Set kubeconfig
         run: |
@@ -30,8 +36,7 @@ jobs:
           chmod 600 kconfig
 
       - name: Apply namespace for app
-        run: |
-          kubectl --kubeconfig=kconfig apply -f infra-k8s/secure-app/namespace.yaml
+        run: kubectl --kubeconfig=kconfig apply -f infra-k8s/secure-app/namespace.yaml
 
       - name: Apply K8s manifests for app
         run: |
@@ -39,10 +44,9 @@ jobs:
           kubectl --kubeconfig=kconfig rollout status deployment/ci-api -n secure-app
 
       - name: Apply namespace for monitoring
-        run: |
-          kubectl --kubeconfig=kconfig apply -f infra-k8s/secure-monitoring/namespace.yaml
+        run: kubectl --kubeconfig=kconfig apply -f infra-k8s/secure-monitoring/namespace.yaml
 
-      - name: Wait for monitoring namespace to be ready
+      - name: Wait for monitoring namespace
         run: |
           for i in {1..5}; do
             kubectl --kubeconfig=kconfig get ns secure-monitoring && break || sleep 2
@@ -53,3 +57,4 @@ jobs:
           kubectl --kubeconfig=kconfig apply -f infra-k8s/secure-monitoring/
           kubectl --kubeconfig=kconfig rollout status deployment/grafana -n secure-monitoring
           kubectl --kubeconfig=kconfig rollout status deployment/prometheus -n secure-monitoring
+
