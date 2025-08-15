@@ -1,0 +1,75 @@
+# Configuration AlertManager (votre config existante)
+alertmanager:
+  config:
+    global:
+      resolve_timeout: 5m
+    route:
+      receiver: slack-notifications
+    receivers:
+      - name: slack-notifications
+        slack_configs:
+          - api_url: https://hooks.slack.com/services/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
+            channel: '#alerts'
+  # OPTION A: Ingress (domaines locaux)
+  ingress:
+    enabled: true
+    ingressClassName: traefik
+    hosts:
+      - host: alertmanager.secure.local
+        paths:
+          - path: /
+            pathType: Prefix
+  # OPTION B: NodePort (décommentez si vous préférez)
+  # service:
+  #   type: NodePort
+  #   nodePort: 30093
+
+# Configuration Prometheus (votre config existante + Ingress)
+prometheus:
+  prometheusSpec:
+    additionalPrometheusRulesMap:
+      ci-api.rules:
+        groups:
+          - name: ci-api.rules
+            rules:
+              - alert: HighHttpRequestRate
+                expr: rate(http_requests_total{app="ci-api"}[5m]) > 10
+                for: 2m
+                labels:
+                  severity: warning
+                annotations:
+                  summary: "High HTTP request rate on ci-api"
+                  description: "The HTTP request rate est > 10 requests/s pendant plus de 2 minutes."
+  # OPTION A: Ingress (domaines locaux)
+  ingress:
+    enabled: true
+    ingressClassName: traefik
+    hosts:
+      - host: prometheus.secure.local
+        paths:
+          - path: /
+            pathType: Prefix
+  # OPTION B: NodePort (décommentez si vous préférez)
+  # service:
+  #   type: NodePort
+  #   nodePort: 30090
+
+# Configuration Grafana avec Ingress
+grafana:
+  # Identifiants admin
+  adminUser: admin
+  adminPassword: admin123
+  
+  # OPTION A: Ingress (domaines locaux)
+  ingress:
+    enabled: true
+    ingressClassName: traefik
+    hosts:
+      - host: grafana.secure.local
+        paths:
+          - path: /
+            pathType: Prefix
+  # OPTION B: NodePort (décommentez si vous préférez)
+  # service:
+  #   type: NodePort
+  #   nodePort: 30030

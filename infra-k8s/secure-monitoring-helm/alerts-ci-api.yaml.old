@@ -1,0 +1,15 @@
+prometheus:
+  prometheusSpec:
+    additionalPrometheusRulesMap:
+      ci-api.rules:
+        groups:
+          - name: ci-api.rules
+            rules:
+              - alert: HighHttpRequestRate
+                expr: rate(http_requests_total{app="ci-api"}[5m]) > 10
+                for: 2m
+                labels:
+                  severity: warning
+                annotations:
+                  summary: "High HTTP request rate on ci-api"
+                  description: "The HTTP request rate est > 10 requests/s pendant plus de 2 minutes."

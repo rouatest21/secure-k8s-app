@@ -4,7 +4,7 @@ metadata:
   name: ci-api-servicemonitor
   namespace: secure-app
   labels:
-    release: prometheus
+    release: kube-prometheus  # ← MODIFIÉ : Label correct pour être découvert
 spec:
   selector:
     matchLabels:
@@ -13,6 +13,6 @@ spec:
     matchNames:
       - secure-app
   endpoints:
-    - port: http-metrics
+    - port: http-metrics  # ← Maintenant correspond au nom du port
       path: /metrics
       interval: 15s
